@@ -1,0 +1,101 @@
+4	4
+2.000 1.000 1.000	1
+1.000 2.000 1.000	1
+1.000 1.000 2.000	1
+1.	1.	1.	2
+
+		
+			
+	!iwwt = matmul(w,wt)
+	!mult a by householder matrix, successive
+	!q is product of householder matices
+	
+	
+	do i=nsize,1,-1
+		do k=1,rhsVecCount
+			total=0
+			do j=i+1,nsize
+				total = total + (a(i,j) * b(j,k))
+	!			write(*,*) 'total=',total
+			enddo
+			total = b(i,k) - total
+			b(i,k) = total / a(i,i)
+			
+		enddo
+	enddo
+	
+
+
+
+
+
+	! forward substitution L y = b
+	do i=1,nsize
+		sum = b(i)
+		do k=i-1,1,-1
+			sum = sum-a(i,k)*x(k)
+		enddo
+	x(i)=sum/p(i)
+	enddo
+	
+	do i=nsize,1,-1
+		sum=x(i)
+		do k=i+1,n
+			sum=sum-a(k,i)*x(k)
+		enddo
+        x(i) = sum/p(i)
+	! back substitution L^T x = y
+	
+		! (3) backsubstitute
+	
+	do i=nsize,1,-1
+		do k=1,rhsVecCount
+			total=0
+			do j=i+1,nsize
+				total = total + (a(i,j) * b(j,k))
+	!			write(*,*) 'total=',total
+			enddo
+			total = b(i,k) - total
+			b(i,k) = total / a(i,i)
+			
+		enddo
+	enddo
+
+
+
+
+
+	! forward substitution L y = b
+	do i=1,nsize
+		sum = b(i)
+		do k=i-1,1,-1
+			sum = sum-a(i,k)*x(k)
+		enddo
+	x(i)=sum/p(i)
+	enddo
+	
+	do i=nsize,1,-1
+		sum=x(i)
+		do k=i+1,n
+			sum=sum-a(k,i)*x(k)
+		enddo
+        x(i) = sum/p(i)
+	! back substitution L^T x = y
+
+
+	l=a
+	do i=1,nsize
+		do j=i,nsize
+			sum=a(i,j)
+				do k=i-1,1,-1
+					sum=sum-a(i,k)*a(j,k)
+				enddo
+			if(i.eq.j)then
+		!		if(sum.le.0.)pause 'choldc failed', a, 'with rounding errors, is not positive defnite.'
+				!p(i)=sqrt(sum)
+				l(i,i) = sqrt(sum)
+			else
+				l(j,i)=sum/l(i,i)
+			endif
+		enddo
+	enddo

@@ -1,0 +1,214 @@
+! Question 1 : QR Decomposition
+! Returns QR decomposition of a non-square nxm matrix 
+! Parameters :: a(input) nxm matrix, q(output), r(output) 
+SUBROUTINE QRDECOMP(a,q,r)
+	IMPLICIT NONE
+	INTEGER :: i,j,k,m,nsize,msize
+	real :: scalef, total=0, sum=0, tau, sigma
+	real, dimension(:,:) :: a
+	real, dimension(:,:), allocatable :: q,r
+	real, dimension(:), allocatable :: s,c
+	nsize = size(a,1)
+	msize = size(a,2)
+	if (nsize .le. msize) then
+		allocate(q(nsize,nsize))  ! Q is nxm
+		allocate(r(nsize,msize))  ! R is nxn
+	else
+		allocate(q(nsize,msize))  ! Q is nxm
+		allocate(r(msize,msize))  ! R is nxn
+	end if
+	q=0
+	
+	r=0 
+	
+	allocate(s(nsize))
+	allocate(c(nsize))
+	
+	do k=1,nsize-1
+		scalef = 0.
+		sum = 0.
+		do i=k,nsize
+	!		scalef = max(scalef, abs(a(i,k)))
+!			write (*,*) 'scalef',scalef,'abs(i,k)',abs(a(i,k))
+!			call OutputMatrix(a)
+			sum = sum + a(i,k) ** 2
+		enddo
+		s(k) = sign(sqrt(sum),a(k,k))
+		c(k) = s(k) * (s(k) - a(k,k))
+		a(k,k) = a(k,k) - s(k)
+		
+		do j=k+1,nsize
+			do i=k,nsize
+				! Calculate the effect of Pk on A
+				sum = 0.
+				do m=k,nsize 
+					sum = sum + (a(m,k) * a(m,j))
+				enddo
+				a(i,j) = a(i,j) - a(i,k)/c(k) * sum
+			enddo
+		enddo
+		
+	enddo
+	write(*,*) 'Vector C',c
+	write(*,*) 'Vector S',s
+	
+END SUBROUTINE QRDECOMP
+
+
+! Question 1 : QR Decomposition
+! Returns QR decomposition of a non-square nxm matrix 
+! Parameters :: a(input) nxm matrix, q(output), r(output) 
+SUBROUTINE QRDECOMP(a,q,r)
+	IMPLICIT NONE
+	INTEGER :: i,j,k,m,nsize,msize
+	real :: scalef, total=0, sum=0, tau, sigma
+	real, dimension(:,:) :: a
+	real, dimension(:,:), allocatable :: q,r
+	nsize = size(a,1)
+	msize = size(a,2)
+	if (nsize .le. msize) then
+		allocate(q(nsize,nsize))  ! Q is nxm
+		allocate(r(nsize,msize))  ! R is nxn
+	else
+		allocate(q(nsize,msize))  ! Q is nxm
+		allocate(r(msize,msize))  ! R is nxn
+	end if
+	q=0
+	
+	r=0 
+	
+	do k=1,nsize-1
+		scalef = 0.
+		do i=k,nsize
+			scalef = max(scalef, abs(a(i,k)))
+!			write (*,*) 'scalef',scalef,'abs(i,k)',abs(a(i,k))
+!			call OutputMatrix(a)
+		enddo
+		
+		! Singular case
+		if (scalef .eq. 0)  then
+			write(*,*) 'A is a singular matrix'
+			
+		! Non-singular : Form Qk and Qk * A
+		else
+			! Normalize matrix A to create householder
+			do i=k,nsize
+				a(i,k) = a(i,k) / scalef
+			enddo
+			sum = 0.
+			
+			! sum squares of column k
+			do i=k,nsize
+				sum = sum + a(i,k) ** 2
+			enddo
+			
+			! sigma returns value of sqrt(sum) with sign of a(k,k)
+			sigma = sign(sqrt(sum),a(k,k))
+			a(k,k) = a(k,k) + sigma
+			
+			q(1,k) = sigma * a(k,k)
+			r(1,k) = -scalef * sigma
+			
+			do j=k+1,nsize
+				sum = 0.
+				do i=k,nsize
+					sum = sum + a(i,k) * a(i,j)
+				enddo
+				tau = sum / q(1,k)
+				do i=k,nsize
+					a(i,j) = a(i,j) - tau * a(i,k)
+				enddo
+			enddo
+		endif
+	enddo
+	r(1,nsize) = a(nsize,nsize)
+	
+END SUBROUTINE QRDECOMP
+
+
+subroutine qrdecomposition(a,c,d) implicit none
+
+real, dimension(n,m) :: a 
+real, dimension(m) :: c
+real, dimension(m) :: d 
+logical :: sing 
+!integer :: i,j,k,n,m
+real :: scale1,sigma,sum1,tau 
+
+sing=.false. 
+
+do k=1,m 
+	scale1=0 
+do i=k,n 
+
+scale1=max(scale1,abs(a(i,k))) 
+end do 
+
+if(scale1.eq.0.)then sing=.true. 
+
+c(k)=0. 
+d(k)=0. 
+else do i=k,n 
+
+a(i,k)=a(i,k)/scale1 
+end do 
+
+sum1=0. 
+do i=k,n 
+sum1=sum1+a(i,k)*a(i,k)
+end do 
+
+sigma=sign(sqrt(sum1),a(k,k)) 
+a(k,k)=a(k,k)+sigma 
+c(k)=sigma*a(k,k) 
+d(k)=-scale1*sigma 
+
+do j=k+1,m 
+	sum1=0. 
+
+	do i=k,n 
+	sum1=sum1+a(i,k)*a(i,j) 
+end do 
+tau=sum1/c(k) 
+do i=k,n 
+a(i,j)=a(i,j)-tau*a(i,k) 
+end do
+end do
+end if
+end do
+d(m)=a(m,m) 
+if(d(m).eq.0.)sing=.true. 
+return 
+end subroutine qrdecomposition
+
+
+subroutine qrsolution(a,c,d,b)
+implicit none
+!integer :: n,m
+real, dimension(n,m) :: a 
+real, dimension(n) :: b
+real, dimension(m) :: c
+real, dimension(m) :: d
+
+!integer :: i,j
+real :: sum1,tau
+do  j=1,m-1
+	sum1=0.
+do  i=j,n
+	sum1=sum1+a(i,j)*b(i)
+end do tau=sum1/c(j) 
+do i=j,m 
+	b(i)=b(i)-tau*a(i,j) 
+end do
+end do
+
+do i=m,1,-1 
+sum1=0.
+do j=i+1,m 
+sum1=sum1+a(i,j)*b(j)
+end do
+b(i)=(b(i)-sum1)/d(i)
+end do
+return
+
+end subroutine qrsolution
